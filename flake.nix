@@ -72,6 +72,7 @@
         modules = [
           # Machine config
           ./machines
+          ./machines/routeserver.nix
           ./machines/mrs1
         ];
       };
@@ -85,6 +86,7 @@
         modules = [
           # Machine config
           ./machines
+          ./machines/routeserver.nix
           ./machines/mrs2
         ];
       };

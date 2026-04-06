@@ -34,22 +34,7 @@
       };
     };
     networks = {
-      "10-mgmt" = {
-        matchConfig = {Name = "nic0";};
-        networkConfig = {
-          Description = "Backend Management NIC";
-          DHCP = "yes";
-        };
-      };
       "20-vtix" = {
-        matchConfig = {Name = "nic1";};
-        networkConfig = {
-          Description = "Backend Management NIC";
-          DHCP = "no";
-          IPv6AcceptRA = "no";
-          IPv6SendRA = "no";
-          EmitLLDP = "no";
-        };
         addresses = [
           {
             Address = "149.112.81.1/25";

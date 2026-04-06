@@ -65,7 +65,7 @@
     tempAddresses = lib.mkDefault "disabled";
     nftables.enable = true;
     firewall = {
-      enable = lib.mkDefault false;
+      enable = lib.mkDefault true;
       allowPing = true;
     };
     useNetworkd = true;

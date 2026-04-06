@@ -50,6 +50,14 @@
           IPv6SendRA = "no";
           EmitLLDP = "no";
         };
+        addresses = [
+          {
+            Address = "149.112.81.1/25";
+          }
+          {
+            Address = "2001:504:136::1791:feed:1/64";
+          }
+        ];
       };
     };
   };

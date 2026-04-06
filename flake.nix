@@ -75,6 +75,19 @@
           ./machines/mrs1
         ];
       };
+      mrs2 = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+
+        specialArgs = {
+          inherit system;
+        };
+
+        modules = [
+          # Machine config
+          ./machines
+          ./machines/mrs2
+        ];
+      };
     };
 
     deploy = {
@@ -89,6 +102,12 @@
           profiles.system.path =
             deployPkgs."x86_64-linux".deploy-rs.lib.activate.nixos
             self.nixosConfigurations.mrs1;
+        };
+        mrs2 = {
+          hostname = "mrs2.sbtnvt.vermont-ix.net";
+          profiles.system.path =
+            deployPkgs."x86_64-linux".deploy-rs.lib.activate.nixos
+            self.nixosConfigurations.mrs2;
         };
       };
     };

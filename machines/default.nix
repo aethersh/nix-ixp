@@ -71,13 +71,15 @@
     useNetworkd = true;
   };
 
-  services.openssh = {
+  services = {
+    qemuGuest.enable = true;
+    openssh = {
     enable = true;
     settings = {
       PermitRootLogin = "no";
       PasswordAuthentication = false;
     };
-  };
+  };};
 
   # https://www.kernel.org/doc/html/latest/networking/ip-sysctl.html
   boot.kernel.sysctl = {

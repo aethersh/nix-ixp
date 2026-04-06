@@ -21,13 +21,12 @@
       "x86_64-darwin"
       "aarch64-darwin"
     ];
-    forEachSupportedSystem = f: nixpkgs.lib.genAttrs supportedSystems (system: f {pkgs = import nixpkgs {inherit system;};});
+    forEachSupportedSystem = f: nixpkgs.lib.genAttrs supportedSystems (system: f {pkgs = import nixpkgs {inherit system;}; inherit system;});
 
     deployPkgs = forEachSupportedSystem (
       {
         pkgs,
         system,
-        ...
       }:
         import nixpkgs {
           inherit system;
@@ -43,7 +42,7 @@
         }
     );
   in {
-    formatter = forEachSupportedSystem ({pkgs}: pkgs.alejandra);
+    formatter = forEachSupportedSystem ({pkgs, ...}: pkgs.alejandra);
     devShells = forEachSupportedSystem (
       {pkgs, ...}: {
         default = pkgs.mkShell {
@@ -84,7 +83,7 @@
           hostname = "mrs1.sbtnvt.vermont-ix.net";
           profiles.system.path =
             deployPkgs."x86_64-linux".deploy-rs.lib.activate.nixos
-            self.nixosConfigurations.donso;
+            self.nixosConfigurations.mrs1;
         };
       };
     };

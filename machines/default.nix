@@ -80,6 +80,7 @@
         PasswordAuthentication = false;
       };
     };
+    iperf3.enable = true;
   };
 
   # https://www.kernel.org/doc/html/latest/networking/ip-sysctl.html

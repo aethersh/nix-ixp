@@ -21,7 +21,12 @@
       "x86_64-darwin"
       "aarch64-darwin"
     ];
-    forEachSupportedSystem = f: nixpkgs.lib.genAttrs supportedSystems (system: f {pkgs = import nixpkgs {inherit system;}; inherit system;});
+    forEachSupportedSystem = f:
+      nixpkgs.lib.genAttrs supportedSystems (system:
+        f {
+          pkgs = import nixpkgs {inherit system;};
+          inherit system;
+        });
 
     deployPkgs = forEachSupportedSystem (
       {

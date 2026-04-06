@@ -1,8 +1,4 @@
-{
-  pkgs,
-  lib,
-  ...
-}: {
+{...}: {
   imports = [
     ./hwconfig.nix
   ];
@@ -12,10 +8,9 @@
   };
 
   boot.loader.grub = {
-      enable = true;
-      device = "/dev/sda";
-    };
-
+    enable = true;
+    device = "/dev/sda";
+  };
 
   systemd.network.networks = {
     "10-mgmt" = {

@@ -12,10 +12,9 @@
   outputs = {
     self,
     nixpkgs,
+    deploy-rs,
     ...
   }: let
-    inherit (self) outputs;
-
     supportedSystems = [
       "x86_64-linux"
       "aarch64-linux"
@@ -58,5 +57,36 @@
       }
     );
 
+    nixosConfigurations = {
+      mrs1 = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+
+        specialArgs = {
+          inherit system;
+        };
+
+        modules = [
+          # Machine config
+          ./machines
+          ./machines/mrs1
+        ];
+      };
+    };
+
+    deploy = {
+      fastConnection = true;
+      remoteBuild = true;
+      user = "root";
+      sshUser = "admin";
+
+      nodes = {
+        mrs1 = {
+          hostname = "mrs1.sbtnvt.vermont-ix.net";
+          profiles.system.path =
+            deployPkgs."x86_64-linux".deploy-rs.lib.activate.nixos
+            self.nixosConfigurations.donso;
+        };
+      };
+    };
   };
 }

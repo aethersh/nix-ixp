@@ -12,17 +12,25 @@
     device = "/dev/sda";
   };
 
-  systemd.network.networks = {
-    "10-mgmt" = {
-      matchConfig = {
-        MACAddress = "BC:24:11:8D:F9:A1";
-        Type = "ether";
+  systemd.network = {
+    links = {
+      "10-mgmt-nic0" = {
+        matchConfig = {
+          MACAddress = "BC:24:11:8D:F9:A1";
+          Type = "ether";
+        };
+        linkConfig = {
+          Name = "nic0";
+        };
       };
-      linkConfig = {
-        Name = "nic0";
-      };
-      networkConfig = {
-        DHCP = "yes";
+    };
+    networks = {
+      "10-mgmt" = {
+        matchConfig = {Name = "nic0";};
+        networkConfig = {
+          Description = "Backend Management NIC";
+          DHCP = "yes";
+        };
       };
     };
   };

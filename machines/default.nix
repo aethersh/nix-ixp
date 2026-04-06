@@ -12,10 +12,18 @@
       experimental-features = [
         "nix-command"
         "flakes"
-        "recursive-nix"
+      ];
+      allowed-users = [
+        "admin"
+        "root"
+        "@wheel"
+      ];
+      trusted-users = [
+        "admin"
+        "root"
+        "@wheel"
       ];
       system-features = ["recursive-nix"];
-      trusted-users = ["root" "@wheel"];
       extra-substituters = ["https://nix-community.cachix.org"];
       extra-trusted-public-keys = [
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
@@ -31,6 +39,9 @@
     };
   };
 
+  time.timeZone = lib.mkDefault "America/New_York";
+  i18n.defaultLocale = "en_US.UTF-8";
+
   # Config sudo/doas commands
   security = {
     doas.enable = false;
@@ -38,6 +49,18 @@
       enable = true;
       wheelNeedsPassword = lib.mkDefault false;
     };
+  };
+
+  users.users.admin = {
+    isNormalUser = true;
+    extraGroups = [
+      "wheel"
+      "bird"
+    ];
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKQ2j1Tc6TMied/Hft9RWZpB+OFlN+TgsDikeJpe8elQ violet@aether"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINimhbJZN+MLdXbtk3Mrb5dca7P+LKy399OqqYZ122Ml henrik@nixos"
+    ];
   };
 
   networking = {

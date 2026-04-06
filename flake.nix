@@ -24,8 +24,39 @@
     ];
     forEachSupportedSystem = f: nixpkgs.lib.genAttrs supportedSystems (system: f {pkgs = import nixpkgs {inherit system;};});
 
-    forEachSystem = nixpkgs.lib.genAttrs supportedSystems;
+    deployPkgs = forEachSupportedSystem (
+      {
+        pkgs,
+        system,
+        ...
+      }:
+        import nixpkgs {
+          inherit system;
+          overlays = [
+            deploy-rs.overlays.default # or deploy-rs.overlays.default
+            (self: super: {
+              deploy-rs = {
+                inherit (pkgs) deploy-rs;
+                inherit (super.deploy-rs) lib;
+              };
+            })
+          ];
+        }
+    );
   in {
     formatter = forEachSupportedSystem ({pkgs}: pkgs.alejandra);
+    devShells = forEachSupportedSystem (
+      {pkgs, ...}: {
+        default = pkgs.mkShell {
+          packages = with pkgs; [
+            nixos-generators
+            pkgs.deploy-rs
+            pkgs.ragenix
+            nh
+          ];
+        };
+      }
+    );
+
   };
 }

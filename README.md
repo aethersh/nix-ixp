@@ -1,0 +1,10 @@
+# `nixp`
+
+_Have you ever seen an internet exchange that's powered by Nix?_
+
+## Hosts
+
+| Hostname | Description                                                                                                              |
+| -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `mrs1`   | Manual Route Server 1 - eventually, these will be automated and thus not controlled by Nix. For now, manual routeserver. |
+| `mrs2`   | Manual Route Server 2 |

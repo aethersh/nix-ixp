@@ -12,6 +12,10 @@
     device = "/dev/sda";
   };
 
+  vtix.routeserver = {
+    generalConfig.cfg.router_id = "149.112.81.1";
+  };
+
   systemd.network = {
     links = {
       "10-mgmt-nic0" = {

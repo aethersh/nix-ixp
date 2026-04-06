@@ -1,4 +1,5 @@
 {lib, ...}: {
+  imports = [../modules];
   nix = {
     optimise = {
       automatic = true;

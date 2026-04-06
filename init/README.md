@@ -21,3 +21,9 @@ vi /tmp/disks.nix
 ```
 sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko/latest -- --mode destroy,format,mount /tmp/disks.nix
 ```
+
+**After Install, safely unmount the disk**
+
+```
+sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko/latest -- --mode unmount /tmp/disks.nix
+```

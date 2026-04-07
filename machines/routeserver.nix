@@ -5,7 +5,7 @@
     clientsConfig.clients = [
       {
         asn = "1351";
-        as-sets = ["AS-UVM"];
+        cfg.filtering.irrdb.as_sets = ["AS-UVM"];
         ip = "142.112.81.3";
       }
     ];

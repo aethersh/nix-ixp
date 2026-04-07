@@ -98,6 +98,9 @@ in {
             ExecReload = "${lib.getExe' pkg "birdc"} configure";
             ExecStop = "${lib.getExe' pkg "birdc"} down";
             RuntimeDirectory = "bird";
+            ReadWritePaths = [
+              "/var/log"
+            ];
             CapabilityBoundingSet = caps;
             AmbientCapabilities = caps;
             ProtectSystem = "full";

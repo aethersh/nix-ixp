@@ -1,7 +1,19 @@
 {...}: {
   vtix.routeserver = {
     enable = true;
-    generalConfig.cfg.rs_as = "62848";
+    generalConfig.cfg = {
+      rs_as = 62848;
+      filtering = {
+        irrdb = {
+          enforce_origin_in_as_set = true;
+          enforce_prefix_in_as_set = true;
+        };
+        rpki_bgp_origin_validation = {
+          enabled = true;
+          reject_invalid = true;
+        };
+      };
+    };
     clientsConfig.clients = [
       {
         asn = "1351";

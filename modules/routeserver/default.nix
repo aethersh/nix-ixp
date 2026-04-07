@@ -70,8 +70,8 @@ in {
           serviceConfig = {
             Group = "bird";
             Type = "forking"; # ARS stays attached to console while it generates; Type="forking" means it will fail if ARS fails
-            ExecStart = "${getExe pkgs.arouteserver} bird -o /etc/arouteserver/bird.conf";
-            ExecReload = "${getExe pkgs.arouteserver} bird -o /etc/arouteserver/bird.conf";
+            ExecStart = "${getExe pkgs.arouteserver} bird --target-version 2.18 -o /etc/arouteserver/bird.conf";
+            ExecReload = "${getExe pkgs.arouteserver} bird --target-version 2.18 -o /etc/arouteserver/bird.conf";
             RuntimeDirectory = "arouteserver";
             TimeoutStartSec = 120; # Two minute delay to ensure it doesn't time out
           };

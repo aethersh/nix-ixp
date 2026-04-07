@@ -34,18 +34,38 @@ in {
       };
 
       systemd.services = {
+        arouteserver-setup = {
+          wantedBy = [
+            "arouteserver.service"
+          ];
+          serviceConfig = {
+            ReadWritePaths = [
+              "/etc/arouteserver"
+            ];
+            Group = "bird";
+            Type = "oneshot";
+            Restart = "on-failure";
+            ExecPaths = ["/nix/store"];
+            NoExecPaths = ["/"];
+          };
+          path = with pkgs; [bgpq4 arouteserver];
+          script = ''
+            mkdir -p /etc/arouteserver
+            yes no | arouteserver setup --dest-dir /etc/arouteserver
+          '';
+        };
         arouteserver = {
           description = "A route server config generator";
-          wantedBy = ["multi-user.target"];
           reloadTriggers = [
             config.environment.etc."arouteserver/general.yml".source
             config.environment.etc."arouteserver/clients.yml".source
           ];
-          requiredBy = [
+          wantedBy = [
             "bird.service"
           ];
           path = with pkgs; [bgpq4];
           serviceConfig = {
+            Group = "bird";
             Type = "forking"; # ARS stays attached to console while it generates; Type="forking" means it will fail if ARS fails
             ExecStart = "${getExe pkgs.arouteserver} bird -o /etc/arouteserver/bird.conf";
             ExecReload = "${getExe pkgs.arouteserver} bird -o /etc/arouteserver/bird.conf";

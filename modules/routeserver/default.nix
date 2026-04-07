@@ -28,9 +28,12 @@ in {
     mkIf cfg.enable {
       # environment.etc."bird/constants.conf".source = ./bird/constants.conf;
       # environment.etc."bird/base.conf".source = ./bird/base.conf;
-      environment.etc = {
-        "arouteserver/general.yml".source = format.generate "general.yml" cfg.generalConfig;
-        "arouteserver/clients.yml".source = format.generate "clients.yml" cfg.clientsConfig;
+      environment = {
+        systemPackages = with pkgs; [bird2 arouteserver];
+        etc = {
+          "arouteserver/general.yml".source = format.generate "general.yml" cfg.generalConfig;
+          "arouteserver/clients.yml".source = format.generate "clients.yml" cfg.clientsConfig;
+        };
       };
 
       systemd.services = {

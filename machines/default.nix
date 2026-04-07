@@ -88,6 +88,12 @@
     iperf3.enable = true;
   };
 
+  programs.neovim = {
+    enable = true;
+    vimAlias = true;
+    viAlias = true;
+  };
+
   environment.systemPackages = with pkgs; [iperf3];
 
   # https://www.kernel.org/doc/html/latest/networking/ip-sysctl.html

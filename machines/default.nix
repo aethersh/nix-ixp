@@ -1,4 +1,8 @@
-{lib, ...}: {
+{
+  lib,
+  pkgs,
+  ...
+}: {
   imports = [../modules];
   nix = {
     optimise = {
@@ -83,6 +87,8 @@
     };
     iperf3.enable = true;
   };
+
+  environment.systemPackages = with pkgs; [iperf3];
 
   # https://www.kernel.org/doc/html/latest/networking/ip-sysctl.html
   boot.kernel.sysctl = {

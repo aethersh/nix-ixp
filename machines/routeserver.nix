@@ -3,6 +3,8 @@
     enable = true;
     generalConfig.cfg = {
       rs_as = 62848;
+      rfc1997_wellknown_communities.policy = "pass";
+      graceful_shutdown.enabled = true;
       filtering = {
         irrdb = {
           enforce_origin_in_as_set = true;
@@ -12,8 +14,39 @@
           enabled = true;
           reject_invalid = true;
         };
+        ipv4_pref_len = {
+          max = 24;
+          min = 8;
+        };
+        ipv6_pref_len = {
+          max = 48;
+          min = 12;
+        };
+        reject_invalid_as_in_as_path = true;
+        max_as_path_len = 32;
+        transit_free = {
+          action = "reject";
+          asns = [
+            174
+            701
+            1299
+            2914
+            3257
+            3320
+            3356
+            5511
+            6453
+            6461
+            6762
+            6830
+            7018
+            12956
+          ];
+        };
+        next_hop.policy = "strict";
       };
     };
+
     clientsConfig.clients = [
       {
         asn = "1351";

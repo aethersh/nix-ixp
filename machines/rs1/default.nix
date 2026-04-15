@@ -4,7 +4,7 @@
   ];
 
   networking = {
-    hostName = "mrs1-sbtnvt";
+    hostName = "rs1-sbtnvt";
   };
 
   boot.loader.grub = {

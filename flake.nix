@@ -62,7 +62,7 @@
     );
 
     nixosConfigurations = {
-      mrs1 = nixpkgs.lib.nixosSystem rec {
+      rs1 = nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
 
         specialArgs = {
@@ -73,10 +73,10 @@
           # Machine config
           ./machines
           ./machines/routeserver.nix
-          ./machines/mrs1
+          ./machines/rs1
         ];
       };
-      mrs2 = nixpkgs.lib.nixosSystem rec {
+      rs2 = nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
 
         specialArgs = {
@@ -87,7 +87,7 @@
           # Machine config
           ./machines
           ./machines/routeserver.nix
-          ./machines/mrs2
+          ./machines/rs2
         ];
       };
       monitor1 = nixpkgs.lib.nixosSystem rec {
@@ -112,17 +112,17 @@
       sshUser = "admin";
 
       nodes = {
-        mrs1 = {
-          hostname = "mrs1.sbtnvt.vermont-ix.net";
+        rs1 = {
+          hostname = "rs1.sbtnvt.vermont-ix.net";
           profiles.system.path =
             deployPkgs."x86_64-linux".deploy-rs.lib.activate.nixos
-            self.nixosConfigurations.mrs1;
+            self.nixosConfigurations.rs1;
         };
-        mrs2 = {
-          hostname = "mrs2.sbtnvt.vermont-ix.net";
+        rs2 = {
+          hostname = "rs2.sbtnvt.vermont-ix.net";
           profiles.system.path =
             deployPkgs."x86_64-linux".deploy-rs.lib.activate.nixos
-            self.nixosConfigurations.mrs2;
+            self.nixosConfigurations.rs2;
         };
         monitor1 = {
           hostname = "monitor1.sbtnvt.vermont-ix.net";

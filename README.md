@@ -6,8 +6,8 @@ _Have you ever seen an internet exchange that's powered by Nix?_
 
 | Hostname | Description                                                                                                              |
 | -------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `mrs1`   | Manual Route Server 1 - eventually, these will be automated and thus not controlled by Nix. For now, manual routeserver. |
-| `mrs2`   | Manual Route Server 2 |
+| `rs1`   | Manual Route Server 1 - eventually, these will be automated and thus not controlled by Nix. For now, manual routeserver. |
+| `rs2`   | Manual Route Server 2 |
 | `monitor1`   | Monitoring VM. Runs a series of common network and system monitoring tools. |
 
 

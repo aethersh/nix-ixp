@@ -128,7 +128,7 @@
           hostname = "monitor1.sbtnvt.vermont-ix.net";
           profiles.system.path =
             deployPkgs."x86_64-linux".deploy-rs.lib.activate.nixos
-            self.nixosConfigurations.mrs2;
+            self.nixosConfigurations.monitor1;
         };
       };
     };

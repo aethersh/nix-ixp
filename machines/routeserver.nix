@@ -65,6 +65,12 @@
     '';
   };
 
+  services.prometheus.exporters.bird = {
+    enable = true;
+    birdVersion = 2; # Explicitly set version, in case it gets upgraded and the default changes to 3 in the future
+    group = "bird";
+  } ;
+
   systemd.network.networks."20-vtix" = {
     matchConfig = {Name = "nic1";};
     networkConfig = {

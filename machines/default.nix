@@ -74,6 +74,7 @@
       allowPing = true;
       extraInputRules = ''
         ip saddr 10.200.0.0/16 tcp dport 22 accept
+        ip saddr 10.200.0.0/16 accept
         tcp dport 22 drop
       '';
     };
@@ -98,6 +99,12 @@
       };
     };
     iperf3.enable = true;
+    prometheus.exporters = {
+      node = {
+        enable = true;
+        enabledCollectors = ["systemd" "network_route" "logind" "ethtool"];
+      };
+    };
   };
 
   programs.neovim = {

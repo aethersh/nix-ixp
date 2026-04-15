@@ -72,8 +72,20 @@
     firewall = {
       enable = lib.mkDefault true;
       allowPing = true;
+      extraInputRules = ''
+        ip saddr 10.200.0.0/16 tcp dport 22 accept
+        tcp dport 22 drop
+      '';
     };
     useNetworkd = true;
+  };
+
+  systemd.network.networks."10-mgmt" = {
+    matchConfig = {Name = "nic0";};
+    networkConfig = {
+      Description = "Backend Management NIC";
+      DHCP = "yes";
+    };
   };
 
   services = {

@@ -70,10 +70,6 @@ in {
             user = "bird";
             group = "bird";
           };
-          # "/run/bird".d = {
-          #   user = "bird";
-          #   group = "bird";
-          # };
           "/var/log/bird".d = {
             user = "bird";
             group = "bird";
@@ -232,8 +228,70 @@ in {
               }
             ];
           };
+
+          birdwatcher.serviceConfig = {
+            User = "bird";
+            Group = "bird";
+          };
+          prometheus-bird-exporter.serviceConfig = {
+            User = "bird";
+            Group = "bird";
+          };
         };
       };
+
+      services = {
+        prometheus.exporters.bird = {
+          enable = true;
+          group = "bird";
+          birdSocket = rs4Socket;
+          extraFlags = [
+            "-bird.socket6 ${rs6Socket}"
+          ];
+        };
+        birdwatcher = {
+          enable = true;
+          settings = ''
+          [server]
+          allow_from = []
+          allow_uncached = false
+          modules_enabled = ["status",
+                              "protocols",
+                              "protocols_bgp",
+                              "protocols_short",
+                              "routes_protocol",
+                              "routes_peer",
+                              "routes_table",
+                              "routes_table_filtered",
+                              "routes_table_peer",
+                              "routes_filtered",
+                              "routes_prefixed",
+                              "routes_noexport",
+                              "routes_pipe_filtered_count",
+                              "routes_pipe_filtered"
+                            ]
+
+          [bird]
+          listen = "0.0.0.0:29184"
+          config = "${rs4Config}"
+          birdc  = "${birdc4}"
+          ttl = 1 # time to live (in minutes) for caching of cli output
+          [bird6]
+          listen = "0.0.0.0:29186"
+          config = "${rs6Config}"
+          birdc  = "${birdc6}"
+          ttl = 1 # time to live (in minutes) for caching of cli output
+
+          [cache]
+          use_redis = false
+
+          [housekeeping]
+          interval = 5
+          force_release_memory = true
+          '';
+        };
+      };
+
       users = {
         users.bird = {
           description = "BIRD Internet Routing Daemon user";

@@ -12,8 +12,9 @@
     device = "/dev/sda";
   };
 
-  vtix.routeserver = {
-    generalConfig.cfg.router_id = "149.112.81.1";
+  vtix.routeserver.ixpManager = {
+    rs4Handle = "rs1-sbtnvt-v4";
+    rs6Handle = "rs1-sbtnvt-v6";
   };
 
   systemd.network = {

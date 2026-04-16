@@ -187,21 +187,21 @@ in {
               exit 0
             '';
         in {
-          ixpm-reconfigure4 = {
+          ixpm-rs4 = {
             wantedBy = [
-              "bird-rs4.service"
+              "bird4.service"
             ];
             serviceConfig = ixpmServiceConfig;
             script = ixpmScript cfg.ixpManager.rs4Handle rs4Config rs4Socket;
           };
-          ixpm-reconfigure6 = {
+          ixpm-rs6 = {
             wantedBy = [
-              "bird-rs6.service"
+              "bird6.service"
             ];
             serviceConfig = ixpmServiceConfig;
             script = ixpmScript cfg.ixpManager.rs6Handle rs6Config rs6Socket;
           };
-          bird-rs4 = {
+          bird4 = {
             description = "IPv4 Routeserver running BIRD Internet Routing Daemon";
             wantedBy = ["multi-user.target"];
             reloadTriggers = [
@@ -217,7 +217,7 @@ in {
               }
             ];
           };
-          bird-rs6 = {
+          bird6 = {
             description = "IPv6 Routeserver running BIRD Internet Routing Daemon";
             wantedBy = ["multi-user.target"];
             reloadTriggers = [

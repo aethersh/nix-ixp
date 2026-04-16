@@ -120,104 +120,61 @@ in {
             ixpmUrlUpdated = "${cfg.ixpManager.baseUrl}/api/v4/router/updated";
           in
             handle: confPath: socketPath: ''
-              VERBOSE=1
-
-              function colourize() {
-                  local type message colour
-                  type=$1
-                  message=$2
-                  case "$type" in
-                      "ERROR")
-                          colour="\033[0;31m";;
-                      "WARNING")
-                          colour="\033[0;33m";;
-                      "OK")
-                          colour="\033[0;32m";;
-                      *)
-                          colour="\033[0m";;
-                  esac
-                  printf "''${colour}''${message}\033[0m"
-              }
-
-              function verbose() {
-                  if [[ $VERBOSE -eq 1 ]]; then
-                      if [[ -n $2 ]]; then
-                          colourize "''${2}" "''${1}"
-                      else
-                          echo -n "''${1}"
-                      fi
-                      if [[ -n $3 ]]; then
-                          echo
-                      fi
-                  fi
-              }
-
-              function is_bird_running() {
-                  local cmd bird_running
-
-                  cmd="${birdPkg}/bin/birdc -s ${socketPath} show memory"
-                  eval $cmd &>/dev/null
-                  bird_running=$?
-
-                  verbose "[fn is_bird_running] $cmd \$bird_running=''${bird_running}"
-
-                  if [[ $bird_running -ne 0 ]]; then
-                      verbose "[BIRD NOT RUNNING] " "WARNING"
-                  fi
-
-                  #NB: value of $bird_running is zero if it is running
-                  return $bird_running
-              }
-
-              # if debug enabled, then verbose should be too
-              if [[ $DEBUG -eq 1 ]] && [[ $VERBOSE -eq 1 ]]; then
-                  VERBOSE=0
-                  echo "WARNING: either verbose or debug mode should be use, verbose disabled"
-              fi
-
               echo "Script started"
 
               if [[ -e ${confPath} ]]; then
                 rm -f ${confPath}.old
                 cp -f ${confPath} ${confPath}.old
                 echo "Backed up old config to ${confPath}.old"
+                echo "##########################################################"
               fi
 
               rm -f ${confPath}.new
               ${pkgs.curl}/bin/curl --verbose --fail -H "X-IXP-Manager-API-Key: ${cfg.ixpManager.apiKey}" -o ${confPath}.new ${ixpmUrlConfig}/${handle}
               echo "Downloaded new config"
+              echo "##########################################################"
 
               ${birdPkg}/bin/bird -p -c ${confPath}.new
               echo "Checked new config"
+              echo "##########################################################"
 
-              is_bird_running
+              echo "Moving new config to main path"
+              cp -f ${confPath}.new ${confPath}
+              rm -f ${confPath}.new
+              echo "##########################################################"
 
-              if [[ $? -eq 0 ]]; then
-                echo "Bird detected online, running reconfigure"
-                cp -f ${confPath}.new ${confPath}
-                rm -f ${confPath}.new
-                echo "Moving new config to main path"
-                ${birdPkg}/bin/birdc -s ${socketPath} configure
+              echo "Checking BIRD socket existence"
+              if [[ -e ${socketPath} ]]; then
+                echo "Checking BIRD operational status"
 
-                if [[ $? -ne 0 ]]; then
-                    echo "ERROR: Reconfigure failed for ${handle}"
+                ${birdPkg}/bin/birdc -s ${socketPath} show memory
+                if [[ $? -eq 0 ]]; then
+                  echo "Bird detected online, running reconfigure"
 
-                    if [[ -e ${confPath}.old ]]; then
-                        echo "  -> Trying to revert to previous"
-                        mv ${confPath} ${confPath}.failed
-                        mv ${confPath}.old ${confPath}
-                        ${birdPkg}/bin/birdc -s ${socketPath} configure
-                        if [[ $? -eq 0 ]]; then
-                            echo "  -> Successfully reverted"
-                        else
-                            echo "  -> Reversion failed"
-                            exit 6
-                        fi
-                    fi
+                  ${birdPkg}/bin/birdc -s ${socketPath} configure
+
+                  if [[ $? -ne 0 ]]; then
+                      echo "ERROR: Reconfigure failed for ${handle}"
+
+                      if [[ -e ${confPath}.old ]]; then
+                          echo "  -> Trying to revert to previous"
+                          mv ${confPath} ${confPath}.failed
+                          mv ${confPath}.old ${confPath}
+                          ${birdPkg}/bin/birdc -s ${socketPath} configure
+                          if [[ $? -eq 0 ]]; then
+                              echo "  -> Successfully reverted"
+                          else
+                              echo "  -> Reversion failed"
+                              exit 6
+                          fi
+                      fi
+                  fi
                 fi
               else
-                  echo "BIRD not running - no reconfig required"
+                  echo "BIRD not running - no reconfig"
               fi
+              echo "##########################################################"
+
               echo "Script complete"
               exit 0
             '';

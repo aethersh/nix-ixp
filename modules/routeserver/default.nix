@@ -93,7 +93,7 @@ in {
             Restart = "on-failure";
             User = "bird";
             Group = "bird";
-            RuntimeDirectory = "bird";
+            StateDirectory = "bird";
             ReadWritePaths = [
               "/var/log"
             ];
@@ -117,7 +117,6 @@ in {
             Group = "bird";
             Type = "oneshot";
             Restart = "on-failure";
-            RuntimeDirectory = "bird";
             ExecPaths = ["/nix/store"];
             NoExecPaths = ["/"];
           };
@@ -214,6 +213,7 @@ in {
                 ExecStart = "${lib.getExe' birdPkg "bird"} -s ${rs4Socket}  -c ${rs4Config}";
                 ExecReload = "${lib.getExe' birdPkg "birdc"} -s ${rs4Socket} configure";
                 ExecStop = "${lib.getExe' birdPkg "birdc"} -s ${rs4Socket} down";
+                RuntimeDirectory = "bird4";
               }
             ];
           };
@@ -229,6 +229,7 @@ in {
                 ExecStart = "${lib.getExe' birdPkg "bird"} -s ${rs6Socket}  -c ${rs6Config}";
                 ExecReload = "${lib.getExe' birdPkg "birdc"} -s ${rs6Socket} configure";
                 ExecStop = "${lib.getExe' birdPkg "birdc"} -s ${rs6Socket} down";
+                RuntimeDirectory = "bird6";
               }
             ];
           };

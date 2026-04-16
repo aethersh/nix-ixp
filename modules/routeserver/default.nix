@@ -64,72 +64,54 @@ in {
         };
       };
 
-      systemd.services = let
-        birdCaps = [
-          "CAP_NET_ADMIN"
-          "CAP_NET_BIND_SERVICE"
-          "CAP_NET_RAW"
-        ];
-
-        birdServiceConfig = {
-          Type = "forking";
-          Restart = "on-failure";
-          User = "bird";
-          Group = "bird";
-          RuntimeDirectory = "bird";
-          ReadWritePaths = [
-            "/var/log"
-          ];
-          CapabilityBoundingSet = birdCaps;
-          AmbientCapabilities = birdCaps;
-          ProtectSystem = "full";
-          ProtectHome = "yes";
-          ProtectKernelTunables = true;
-          ProtectControlGroups = true;
-          PrivateTmp = true;
-          PrivateDevices = true;
-          SystemCallFilter = "~@cpu-emulation @debug @keyring @module @mount @obsolete @raw-io";
-          MemoryDenyWriteExecute = "yes";
+      systemd = {
+        tmpfiles.settings."10-bird-routeservers" = {
+          "/var/lib/bird".d = {
+            user = "bird";
+            group = "bird";
+          };
         };
 
-        ixpmServiceConfig = {
-          ReadWritePaths = [
-            "/var/lib/bird"
+        services = let
+          birdCaps = [
+            "CAP_NET_ADMIN"
+            "CAP_NET_BIND_SERVICE"
+            "CAP_NET_RAW"
           ];
-          User = "bird";
-          Group = "bird";
-          Type = "oneshot";
-          Restart = "on-failure";
-          RuntimeDirectory = "bird";
-          ExecPaths = ["/nix/store"];
-          NoExecPaths = ["/"];
-        };
 
-        ixpmScript = let
-          ixpmUrlLock = "${cfg.ixpManager.baseUrl}/api/v4/router/get-update-lock";
-          ixpmUrlConfig = "${cfg.ixpManager.baseUrl}/api/v4/router/gen-config";
-          ixpmUrlLockRelease = "${cfg.ixpManager.baseUrl}/api/v4/router/release-update-lock";
-          ixpmUrlUpdated = "${cfg.ixpManager.baseUrl}/api/v4/router/updated";
-        in
-          handle: confPath: socketPath: ''
-            VERBOSE=1
+          birdServiceConfig = {
+            Type = "forking";
+            Restart = "on-failure";
+            User = "bird";
+            Group = "bird";
+            RuntimeDirectory = "bird";
+            ReadWritePaths = [
+              "/var/log"
+            ];
+            CapabilityBoundingSet = birdCaps;
+            AmbientCapabilities = birdCaps;
+            ProtectSystem = "full";
+            ProtectHome = "yes";
+            ProtectKernelTunables = true;
+            ProtectControlGroups = true;
+            PrivateTmp = true;
+            PrivateDevices = true;
+            SystemCallFilter = "~@cpu-emulation @debug @keyring @module @mount @obsolete @raw-io";
+            MemoryDenyWriteExecute = "yes";
+          };
 
-            function colourize() {
-                local type message colour
-                type=$1
-                message=$2
-                case "$type" in
-                    "ERROR")
-                        colour="\033[0;31m";;
-                    "WARNING")
-                        colour="\033[0;33m";;
-                    "OK")
-                        colour="\033[0;32m";;
-                    *)
-                        colour="\033[0m";;
-                esac
-                printf "''${colour}''${message}\033[0m"
-            }
+          ixpmServiceConfig = {
+            ReadWritePaths = [
+              "/var/lib/bird"
+            ];
+            User = "bird";
+            Group = "bird";
+            Type = "oneshot";
+            Restart = "on-failure";
+            RuntimeDirectory = "bird";
+            ExecPaths = ["/nix/store"];
+            NoExecPaths = ["/"];
+          };
 
           ixpmScript = let
             ixpmUrlLock = "${cfg.ixpManager.baseUrl}/api/v4/router/get-update-lock";

@@ -70,6 +70,10 @@ in {
             user = "bird";
             group = "bird";
           };
+          "/etc/bird".d = {
+            user = "bird";
+            group = "bird";
+          };
           "/var/log/bird".d = {
             user = "bird";
             group = "bird";
@@ -111,6 +115,7 @@ in {
             ];
             User = "bird";
             Group = "bird";
+            StateDirectory = "bird";
             Type = "oneshot";
             Restart = "on-failure";
             ExecPaths = ["/nix/store"];

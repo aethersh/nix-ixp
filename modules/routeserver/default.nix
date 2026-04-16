@@ -188,6 +188,7 @@ in {
             wantedBy = [
               "bird4.service"
             ];
+            startAt = "hourly";
             serviceConfig = ixpmServiceConfig;
             script = ixpmScript cfg.ixpManager.rs4Handle rs4Config rs4Socket;
           };
@@ -195,6 +196,7 @@ in {
             wantedBy = [
               "bird6.service"
             ];
+            startAt = "hourly";
             serviceConfig = ixpmServiceConfig;
             script = ixpmScript cfg.ixpManager.rs6Handle rs6Config rs6Socket;
           };
@@ -236,7 +238,6 @@ in {
         users.bird = {
           description = "BIRD Internet Routing Daemon user";
           group = "bird";
-          home = "/var/lib/bird";
           isSystemUser = true;
         };
         groups.bird = {};

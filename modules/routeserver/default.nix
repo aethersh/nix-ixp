@@ -151,34 +151,34 @@ in {
               rm -f ${confPath}.new
               echo "##########################################################"
 
-              # echo "Checking BIRD operational status"
-              # ${birdPkg}/bin/birdc -s ${socketPath} show memory
-              # if [[ $? -eq 0 ]]; then
-              #   echo "Bird detected online, running reconfigure"
+              echo "Checking BIRD operational status"
+              ${birdPkg}/bin/birdc -s ${socketPath} show memory
+              if [[ $? -eq 0 ]]; then
+                echo "Bird detected online, running reconfigure"
 
-              #   ${birdPkg}/bin/birdc -s ${socketPath} configure
+                ${birdPkg}/bin/birdc -s ${socketPath} configure
 
-              #   if [[ $? -ne 0 ]]; then
-              #       echo "ERROR: Reconfigure failed for ${handle}"
+                if [[ $? -ne 0 ]]; then
+                    echo "ERROR: Reconfigure failed for ${handle}"
 
-              #       if [[ -e ${confPath}.old ]]; then
-              #           echo "  -> Trying to revert to previous"
-              #           mv ${confPath} ${confPath}.failed
-              #           mv ${confPath}.old ${confPath}
-              #           ${birdPkg}/bin/birdc -s ${socketPath} configure
-              #           if [[ $? -eq 0 ]]; then
-              #               echo "  -> Successfully reverted"
-              #           else
-              #               echo "  -> Reversion failed"
-              #               exit 6
-              #           fi
-              #       fi
-              #   fi
+                    if [[ -e ${confPath}.old ]]; then
+                        echo "  -> Trying to revert to previous"
+                        mv ${confPath} ${confPath}.failed
+                        mv ${confPath}.old ${confPath}
+                        ${birdPkg}/bin/birdc -s ${socketPath} configure
+                        if [[ $? -eq 0 ]]; then
+                            echo "  -> Successfully reverted"
+                        else
+                            echo "  -> Reversion failed"
+                            exit 6
+                        fi
+                    fi
+                fi
 
-              # else
-              #     echo "BIRD not running - no reconfig"
-              # fi
-              # echo "##########################################################"
+              else
+                  echo "BIRD not running - no reconfig"
+              fi
+              echo "##########################################################"
 
               echo "Script complete"
               exit 0

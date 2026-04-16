@@ -8,8 +8,8 @@
 
   format = pkgs.formats.yaml {};
 
-  rs4Socket = "/run/bird/bird-rs4.ctl";
-  rs6Socket = "/run/bird/bird-rs6.ctl";
+  rs4Socket = "bird4.ctl";
+  rs6Socket = "bird6.ctl";
 
   rs4Config = "/var/lib/bird/bird-v4.conf";
   rs6Config = "/var/lib/bird/bird-v6.conf";

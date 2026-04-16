@@ -111,7 +111,7 @@ in {
 
           ixpmServiceConfig = {
             ReadWritePaths = [
-              "/var/lib/bird"
+              "/etc/bird"
             ];
             User = "bird";
             Group = "bird";

@@ -1,6 +1,7 @@
 {...}: {
   imports = [
     ./hwconfig.nix
+    ./services.nix
   ];
 
   networking = {

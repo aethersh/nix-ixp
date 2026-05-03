@@ -103,6 +103,19 @@
           ./machines/monitor1
         ];
       };
+      akvorado = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+
+        specialArgs = {
+          inherit system;
+        };
+
+        modules = [
+          # Machine config
+          ./machines
+          ./machines/akvorado
+        ];
+      };
     };
 
     deploy = {
@@ -129,6 +142,12 @@
           profiles.system.path =
             deployPkgs."x86_64-linux".deploy-rs.lib.activate.nixos
             self.nixosConfigurations.monitor1;
+        };
+        akvorado = {
+          hostname = "akvorado.sbtnvt.vermont-ix.net";
+          profiles.system.path =
+            deployPkgs."x86_64-linux".deploy-rs.lib.activate.nixos
+            self.nixosConfigurations.akvorado;
         };
       };
     };

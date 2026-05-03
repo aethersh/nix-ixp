@@ -57,7 +57,7 @@
         kafka = {
           image = "apache/kafka:4.2.0";
           inherit autoRemoveOnStop;
-          extraOptions = [restartOption "--health-cmd=\"CMD /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server kafka:9092\""];
+          extraOptions = [restartOption "--health-cmd=CMD,/opt/kafka/bin/kafka-topics.sh,--list,--bootstrap-server,kafka:9092"];
           volumes = ["/mnt/fast/akvorado/kafka:/var/lib/kafka/data"];
           environment = {
             # KRaft settings

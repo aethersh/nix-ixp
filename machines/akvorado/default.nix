@@ -94,13 +94,23 @@
         redis = {
           image = "valkey/valkey:9.0";
           inherit autoRemoveOnStop;
-          extraOptions = [restartOption];
+          extraOptions = [restartOption "--health-cmd=\"timeout 3 redis-cli ping | grep -q PONG\"" ];
         };
         clickhouse = {
           # TODO: configuration files
           image = "clickhouse/clickhouse-server:26.3";
           inherit autoRemoveOnStop;
-          extraOptions = [restartOption];
+          extraOptions = [
+            restartOption
+            (podmanHealthcheckCmdArray [
+              "wget"
+              "-T"
+              "1"
+              "--spider"
+              "--no-proxy"
+              "http://127.0.0.1:8123/ping"
+            ])
+          ];
           environment = {
             CLICKHOUSE_INIT_TIMEOUT = "60";
             CLICKHOUSE_SKIP_USER_SETUP = "1";

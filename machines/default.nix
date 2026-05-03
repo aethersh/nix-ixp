@@ -113,7 +113,7 @@
     viAlias = true;
   };
 
-  environment.systemPackages = with pkgs; [iperf3];
+  environment.systemPackages = with pkgs; [iperf3 btop];
 
   # https://www.kernel.org/doc/html/latest/networking/ip-sysctl.html
   boot.kernel.sysctl = {

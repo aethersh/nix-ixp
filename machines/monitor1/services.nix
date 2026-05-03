@@ -44,6 +44,9 @@
                 targets = ["monitor1.sbtnvt.vermont-ix.net:9100"];
               }
               {
+                targets = ["akvorado.sbtnvt.vermont-ix.net:9100"];
+              }
+              {
                 targets = ["rs1.sbtnvt.vermont-ix.net:9100"];
                 labels.system = "routeserver";
               }

@@ -22,6 +22,9 @@
     };
   };
 
+  users.users.admin.extraGroups = ["podman"];
+  environment.sessionVariables.CONTAINER_HOST = "unix:///run/podman/podman.sock";
+
   virtualisation = {
     podman = {
       enable = true;

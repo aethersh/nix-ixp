@@ -40,6 +40,7 @@
       enable = true;
       dockerSocket.enable = true;
       autoPrune.enable = true;
+      defaultNetwork.settings = { dns_enabled = true; ipv6_enabled = true; };
     };
     oci-containers = let
       # Shared declaration for akvorado container image
@@ -48,7 +49,6 @@
       autoRemoveOnStop = false;
       restartOption = "--restart=unless-stopped";
 
-      # akvoradoDir = ./akvorado-config;
       akvoradoYml = ./akvorado-config/akvorado.yml;
 
       clickhouseServerXml = ./clickhouse/server.xml;

@@ -1,0 +1,168 @@
+kafka:
+  topic: flows
+  brokers:
+    - kafka:9092
+  topic-configuration:
+    num-partitions: 8
+    replication-factor: 1
+    config-entries:
+      # The retention policy in Kafka is mainly here to keep a buffer
+      # for ClickHouse.
+      segment.bytes: 1073741824
+      retention.ms: 86400000 # 1 day
+      cleanup.policy: delete
+      compression.type: producer
+
+geoip:
+  optional: true
+  # When running on Docker, these paths are inside the container. By default,
+  # IPinfo databases are used. (https://ipinfo.io/)
+  # asn-database:
+  #   - /usr/share/GeoIP/asn.mmdb
+  # geo-database:
+  #   - /usr/share/GeoIP/country.mmdb
+  # If you want to use MaxmindDB, check `.env`, `docker-compose-maxmind.yml` and
+  # update these paths:
+  #asn-database:
+  # - /usr/share/GeoIP/GeoLite2-ASN.mmdb
+  #geo-database:
+  # - /usr/share/GeoIP/GeoLite2-Country.mmdb
+
+clickhousedb:
+  servers:
+    - clickhouse:9000
+
+clickhouse:
+  orchestrator-url: http://akvorado-orchestrator:8080
+  # prometheus-endpoint: /metrics
+  asns:
+    5096: Lightboard
+    11150: Lightboard Corp
+    62848: Vermont IX Route Servers
+  networks:
+    # You should customize this section with your networks. This
+    # populates the Src/DstNetName/Role/Site/Region/Tenant fields.
+    149.112.81.0/24:
+      name: vermontix-lan-ip4
+      role: ixlan
+    2001:504:137::/64:
+      name: vermontix-lan-ip6
+      role: ixlan
+    149.112.190.0/24:
+      name: vermontix-ops-ip4
+      role: ixops
+    2602:F9C6::/36:
+      name: lightboard-v6
+      role: ixops
+  network-sources: []
+
+  # network-sources:
+  # amazon:
+  #   url: https://ip-ranges.amazonaws.com/ip-ranges.json
+  #   interval: 6h
+  #   transform: |
+  #     (.prefixes + .ipv6_prefixes)[] |
+  #     { prefix: (.ip_prefix // .ipv6_prefix), tenant: "amazon", region: .region, role: .service|ascii_downcase }
+  # gcp:
+  #   url: https://www.gstatic.com/ipranges/cloud.json
+  #   interval: 6h
+  #   transform: |
+  #     .prefixes[] |
+  #     { prefix: (.ipv4Prefix // .ipv6Prefix), tenant: "google-cloud", region: .scope }
+  # netbox:
+  #   url: "https://netbox.domain.tld/api/ipam/prefixes/?limit=0"
+  #   interval: 6h
+  #   headers:
+  #     Authorization: "Token YOUR_NETBOX_API_TOKEN"
+  #     Accept: "application/json"
+  #   transform: |
+  #     .results[] |
+  #     { prefix: .prefix,
+  #       tenant: .tenant.name,
+  #       site: .scope.description,
+  #       city: .scope.name,
+  #       role: .role.name,
+  #       name: .description
+  #     }
+  # nerd-scan:
+  #   url: https://nerd.cesnet.cz/nerd/data/bl_scan.txt
+  #   parser: plain
+  #   interval: 24h
+  #   transform: |
+  #     .[] | select(startswith("#") | not) |
+  #     { prefix: . + "/32", tenant: "nerd", role: "nerd-scan" }
+
+inlet:
+  flow:
+    inputs:
+      # NetFlow port
+      # - type: udp
+      #   decoder: netflow
+      #   listen: :2055
+      #   workers: 4
+      #   # Before increasing this value, look for it in the troubleshooting section
+      #   # of the documentation.
+      #   receive-buffer: 212992
+      # IPFIX port
+      # - type: udp
+      #   decoder: netflow
+      #   listen: :4739
+      #   workers: 4
+      #   receive-buffer: 212992
+      # sFlow port
+      - type: udp
+        decoder: sflow
+        listen: :6343
+        workers: 4
+        receive-buffer: 212992
+outlet:
+  metadata:
+    providers:
+      - type: snmp
+        credentials:
+          ::/0:
+            communities: public
+  routing:
+    provider:
+      type: bmp
+      # Before increasing this value, look for it in the troubleshooting section
+      # of the documentation.
+      receive-buffer: 212992
+  core:
+    exporter-classifiers:
+      # This is an example. This should be customized depending on how
+      # your exporters are named.
+      - ClassifySiteRegex(Exporter.Name, "^([^-]+)-", "$1")
+      - ClassifyRegion("sbtnvt")
+      # - ClassifyTenant("acme")
+      # - ClassifyRole("edge")
+    interface-classifiers:
+      # This is an example. This must be customized depending on the
+      # descriptions of your interfaces. In the following, we assume
+      # external interfaces are named "Transit: Cogent" Or "IX:
+      # FranceIX".
+      - |
+        ClassifyConnectivityRegex(Interface.Description, "^(?i)(transit|pni|ppni|ix):? ", "$1") &&
+        ClassifyProviderRegex(Interface.Description, "^\\S+?\\s(\\S+)", "$1") &&
+        ClassifyExternal()
+      - |
+        ClassifyConnectivityRegex(Interface.Description, "^(?i)(member|trunk):? ", "$1") &&
+        ClassifyProviderRegex(Interface.Description, "^\\S+?\\s(\\S+)", "$1") &&
+        ClassifyInternal()
+      - ClassifyInternal()
+console:
+  http:
+    cache:
+      type: redis
+      server: redis:6379
+  database:
+    saved-filters:
+      # These are prepopulated filters you can select in a drop-down
+      # menu. Users can add more filters interactively.
+      # - description: "From Netflix"
+      #   content: >-
+      #     InIfBoundary = external AND SrcAS = AS2906
+      # - description: "From GAFAM"
+      #   content: >-
+      #     InIfBoundary = external AND
+      #     SrcAS IN (AS15169, AS16509, AS32934, AS6185, AS8075)

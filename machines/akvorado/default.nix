@@ -34,6 +34,8 @@
     oci-containers = let
       # Shared declaration for akvorado container image
       image = "quay.io/akvorado/akvorado:2.3.0";
+
+      autoRemoveOnStop = false;
       restartOption = "--restart=unless-stopped";
 
       akvoradoDir = ./akvorado-config;
@@ -44,6 +46,7 @@
       containers = {
         kafka = {
           image = "apache/kafka:4.2.0";
+          inherit autoRemoveOnStop;
           extraOptions = [restartOption "--health-cmd=\"CMD /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server kafka:9092\""];
           volumes = ["/mnt/fast/akvorado/kafka:/var/lib/kafka/data"];
           environment = {
@@ -69,11 +72,13 @@
         };
         redis = {
           image = "apache/kafka:4.2.0";
+          inherit autoRemoveOnStop;
           extraOptions = [restartOption];
         };
         clickhouse = {
           # TODO: configuration files
           image = "clickhouse/clickhouse-server:26.3";
+          inherit autoRemoveOnStop;
           extraOptions = [restartOption];
           environment = {
             CLICKHOUSE_INIT_TIMEOUT = "60";
@@ -93,6 +98,7 @@
         orchestrator = {
           inherit image;
           cmd = ["orchestrator" "/etc/akvorado/akvorado.yaml"];
+          inherit autoRemoveOnStop;
           extraOptions = [restartOption];
           dependsOn = ["kafka"];
           volumes = [
@@ -102,6 +108,7 @@
         console = {
           inherit image;
           cmd = ["console" "http://orchestrator:8080"];
+          inherit autoRemoveOnStop;
           extraOptions = [restartOption];
           dependsOn = ["orchestrator" "redis" "clickhouse"];
           volumes = ["/mnt/fast/akvorado/console:/run/akvorado"];
@@ -112,6 +119,7 @@
         inlet = {
           inherit image;
           cmd = ["inlet" "http://orchestrator:8080"];
+          inherit autoRemoveOnStop;
           extraOptions = [restartOption];
           dependsOn = ["orchestrator" "kafka"];
           volumes = ["/mnt/fast/akvorado/run:/run/akvorado"];
@@ -124,6 +132,7 @@
         outlet = {
           inherit image;
           cmd = ["outlet" "http://orchestrator:8080"];
+          inherit autoRemoveOnStop;
           extraOptions = [restartOption];
           dependsOn = ["orchestrator" "kafka" "clickhouse"];
           volumes = ["/mnt/fast/akvorado/run:/run/akvorado"];

@@ -25,6 +25,16 @@
   users.users.admin.extraGroups = ["podman"];
   environment.sessionVariables.CONTAINER_HOST = "unix:///run/podman/podman.sock";
 
+  systemd = {
+    tmpfiles.settings."10-akvorado-storage" = {
+      "/mnt/fast/akvorado/kafka"."d".group = "podman";
+      "/mnt/fast/akvorado/console"."d".group = "podman";
+      "/mnt/fast/akvorado/run"."d".group = "podman";
+      "/mnt/fast/akvorado/clickhouse"."d".group = "podman";
+    };
+    targets.akvorado.requires = ["podman-kafka.service" "podman-redis.service" "podman-orchestrator.service" "podman-inlet.service" "podman-console.service" "podman-outlet.service"];
+  };
+
   virtualisation = {
     podman = {
       enable = true;

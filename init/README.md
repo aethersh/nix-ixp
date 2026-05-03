@@ -77,7 +77,7 @@ You'll also have to import these things in `flake.nix` but that should be pretty
 After those changes are made, push them to the GitHub repository, and note the 7-character hash of your latest commit. 
 
 ```
-nixos-install --root /mnt --show-hardware-config
+nixos-install --root /mnt --flake github:aethersh/nix-ixp/<hash>#<machine>
 ```
 
 ### After Install, safely unmount the disk

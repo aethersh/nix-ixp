@@ -23,7 +23,9 @@
   };
 
   users.users.admin.extraGroups = ["podman"];
-  environment.sessionVariables.CONTAINER_HOST = "unix:///run/podman/podman.sock";
+  environment={sessionVariables.CONTAINER_HOST = "unix:///run/podman/podman.sock";
+    etc."akvorado/kafka.env".source = ./kafka.env;
+  };
 
   systemd = {
     tmpfiles.settings."10-akvorado-storage" = {
@@ -90,7 +92,7 @@
           #   KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR = "1";
           #   KAFKA_LOG_DIRS = "/var/lib/kafka/data";
           # };
-          environmentFiles = [./kafka.env];
+          environmentFiles = ["/etc/akvorado/kafka.env"];
         };
         redis = {
           image = "valkey/valkey:9.0";

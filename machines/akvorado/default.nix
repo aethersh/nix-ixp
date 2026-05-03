@@ -81,7 +81,7 @@
           };
         };
         redis = {
-          image = "apache/kafka:4.2.0";
+          image = "valkey/valkey:9.0";
           inherit autoRemoveOnStop;
           extraOptions = [restartOption];
         };

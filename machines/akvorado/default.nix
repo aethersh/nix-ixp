@@ -49,6 +49,7 @@
       restartOption = "--restart=unless-stopped";
 
       akvoradoDir = ./akvorado-config;
+      akvoradoYml = ./akvorado-config/akvorado.yml;
 
       clickhouseServerXml = ./clickhouse/server.xml;
       clickhouseO11yXml = ./clickhouse/observability.xml;
@@ -122,7 +123,7 @@
           extraOptions = [restartOption];
           dependsOn = ["kafka"];
           volumes = [
-            "${akvoradoDir}:/etc/akvorado:ro"
+            "${akvoradoYml}:/etc/akvorado/akvorado.yml:ro"
           ];
         };
         console = {

@@ -48,7 +48,7 @@
       autoRemoveOnStop = false;
       restartOption = "--restart=unless-stopped";
 
-      akvoradoDir = ./akvorado-config;
+      # akvoradoDir = ./akvorado-config;
       akvoradoYml = ./akvorado-config/akvorado.yml;
 
       clickhouseServerXml = ./clickhouse/server.xml;
@@ -94,7 +94,7 @@
         redis = {
           image = "valkey/valkey:9.0";
           inherit autoRemoveOnStop;
-          extraOptions = [restartOption "--health-cmd=\"timeout 3 redis-cli ping | grep -q PONG\"" ];
+          extraOptions = [restartOption];
         };
         clickhouse = {
           # TODO: configuration files
@@ -133,7 +133,7 @@
           extraOptions = [restartOption];
           dependsOn = ["kafka"];
           volumes = [
-            "${akvoradoYml}:/etc/akvorado/akvorado.yml:ro"
+            "${akvoradoYml}:/etc/akvorado/akvorado.yaml:ro"
           ];
         };
         console = {

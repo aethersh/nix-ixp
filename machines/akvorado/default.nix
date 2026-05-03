@@ -72,27 +72,32 @@
             ])
           ];
           volumes = ["/mnt/fast/akvorado/kafka:/var/lib/kafka/data"];
-          # environment = {
-          #   # KRaft settings
-          #   KAFKA_NODE_ID = "1";
-          #   KAFKA_PROCESS_ROLES = "controller,broker";
-          #   KAFKA_CONTROLLER_QUORUM_VOTERS = "1@kafka:9093";
-          #   # Listeners
-          #   KAFKA_LISTENERS = "CLIENT://:9092,CONTROLLER://:9093";
-          #   KAFKA_LISTENER_SECURITY_PROTOCOL_MAP = "CLIENT:PLAINTEXT,CONTROLLER:PLAINTEXT";
-          #   KAFKA_ADVERTISED_LISTENERS = "CLIENT://kafka:9092";
-          #   KAFKA_CONTROLLER_LISTENER_NAMES = "CONTROLLER";
-          #   KAFKA_INTER_BROKER_LISTENER_NAME = "CLIENT";
-          #   # Misc
-          #   KAFKA_DELETE_TOPIC_ENABLE = "true";
-          #   KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR = "1";
-          #   KAFKA_TRANSACTION_STATE_LOG_MIN_ISR = "1";
-          #   KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR = "1";
-          #   KAFKA_SHARE_COORDINATOR_STATE_TOPIC_REPLICATION_FACTOR = "1";
-          #   KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR = "1";
-          #   KAFKA_LOG_DIRS = "/var/lib/kafka/data";
-          # };
-          environmentFiles = ["/etc/akvorado/kafka.env"];
+          environment = {
+            # KRaft settings
+
+            # Listeners
+
+
+            # KAFKA_INTER_BROKER_LISTENER_NAME = "CLIENT";
+            # # Misc
+            # KAFKA_DELETE_TOPIC_ENABLE = "true";
+            # KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR = "1";
+            # KAFKA_TRANSACTION_STATE_LOG_MIN_ISR = "1";
+            # KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR = "1";
+            # KAFKA_SHARE_COORDINATOR_STATE_TOPIC_REPLICATION_FACTOR = "1";
+            # KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR = "1";
+            # KAFKA_LOG_DIRS = "/var/lib/kafka/data";
+
+            # Required
+            KAFKA_NODE_ID = "1";
+            KAFKA_PROCESS_ROLES = "controller,broker";
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP = "CLIENT:PLAINTEXT,CONTROLLER:PLAINTEXT";
+            KAFKA_CONTROLLER_QUORUM_VOTERS = "1@kafka:9093";
+            KAFKA_LISTENERS = "CLIENT://:9092,CONTROLLER://:9093";
+            KAFKA_ADVERTISED_LISTENERS = "CLIENT://kafka:9092";
+            KAFKA_CONTROLLER_LISTENER_NAMES = "CONTROLLER";
+          };
+          # environmentFiles = ["/etc/akvorado/kafka.env"];
         };
         redis = {
           image = "valkey/valkey:9.0";

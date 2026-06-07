@@ -14,7 +14,7 @@
   };
 
   systemd.network.networks."20-vtix" = {
-    matchConfig = {Name = "nic1";};
+    matchConfig.Name = "nic1";
     networkConfig = {
       Description = "Vermont IX Peering Lan";
       DHCP = "no";

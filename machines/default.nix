@@ -82,7 +82,7 @@
   };
 
   systemd.network.networks."10-mgmt" = {
-    matchConfig = {Name = "nic0";};
+    matchConfig.Name = "nic0";
     networkConfig = {
       Description = "Backend Management NIC";
       DHCP = "yes";

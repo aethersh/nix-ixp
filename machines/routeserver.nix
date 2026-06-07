@@ -1,7 +1,7 @@
 {...}: {
   vtix.routeserver = {
     enable = true;
-    ixpManager.apiKey = "0HoSsYgJ3cuM4PmWl6V7ZjUFNjt5xRYeq4fRNr2R1CRDB0tK";
+    ixpManager.apiKey = "xzS41cxy1wXxjO7oFJMuqnO7WOPtqEtBgpIUcqyCyNOTcMHn";
   };
 
   networking.firewall = {

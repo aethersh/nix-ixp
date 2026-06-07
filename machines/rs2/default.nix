@@ -24,18 +24,14 @@
           MACAddress = "BC:24:11:A4:16:7E";
           Type = "ether";
         };
-        linkConfig = {
-          Name = "nic0";
-        };
+        linkConfig.Name = "nic0";
       };
       "20-vtix-nic1" = {
         matchConfig = {
           MACAddress = "00:17:91:fe:ed:02";
           Type = "ether";
         };
-        linkConfig = {
-          Name = "nic1";
-        };
+        linkConfig.Name = "nic1";
       };
     };
     networks = {
@@ -45,7 +41,7 @@
             Address = "149.112.81.2/25";
           }
           {
-            Address = "2001:504:136::1791:feed:2/64";
+            Address = "2001:504:137::feed:2/64";
           }
         ];
       };

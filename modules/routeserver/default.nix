@@ -55,9 +55,162 @@ in {
       birdPkg = pkgs.bird2;
       birdc4 = "${birdPkg}/bin/birdc -s ${rs4Socket}";
       birdc6 = "${birdPkg}/bin/birdc -s ${rs6Socket}";
+
+      ixpmScriptGenerator = let
+        ixpmUrlLock = "${cfg.ixpManager.baseUrl}/api/v4/router/get-update-lock";
+        ixpmUrlConfig = "${cfg.ixpManager.baseUrl}/api/v4/router/gen-config";
+        ixpmUrlLockRelease = "${cfg.ixpManager.baseUrl}/api/v4/router/release-update-lock";
+        ixpmUrlUpdated = "${cfg.ixpManager.baseUrl}/api/v4/router/updated";
+      in
+        handle: confPath: socketPath: ''
+          echo "Script started"
+
+          if [[ -e ${confPath} ]]; then
+            rm -f ${confPath}.old
+            cp -f ${confPath} ${confPath}.old
+            echo "Backed up old config to ${confPath}.old"
+            echo "##########################################################"
+          fi
+
+          rm -f ${confPath}.new
+          ${pkgs.curl}/bin/curl --verbose --fail -H "X-IXP-Manager-API-Key: ${cfg.ixpManager.apiKey}" -o ${confPath}.new ${ixpmUrlConfig}/${handle}
+          echo "Downloaded new config"
+          echo "##########################################################"
+
+          ${birdPkg}/bin/bird -p -c ${confPath}.new
+          echo "Checked new config"
+          echo "##########################################################"
+
+          echo "Moving new config to main path"
+          cp -f ${confPath}.new ${confPath}
+          rm -f ${confPath}.new
+          echo "##########################################################"
+
+          echo "Checking BIRD operational status"
+          ${birdPkg}/bin/birdc -s ${socketPath} show memory
+          if [[ $? -eq 0 ]]; then
+            echo "Bird detected online, running reconfigure"
+
+            ${birdPkg}/bin/birdc -s ${socketPath} configure
+
+            if [[ $? -ne 0 ]]; then
+                echo "ERROR: Reconfigure failed for ${handle}"
+
+                if [[ -e ${confPath}.old ]]; then
+                    echo "  -> Trying to revert to previous"
+                    mv ${confPath} ${confPath}.failed
+                    mv ${confPath}.old ${confPath}
+                    ${birdPkg}/bin/birdc -s ${socketPath} configure
+                    if [[ $? -eq 0 ]]; then
+                        echo "  -> Successfully reverted"
+                    else
+                        echo "  -> Reversion failed"
+                        exit 6
+                    fi
+                fi
+            fi
+
+          else
+              echo "BIRD not running - no reconfig"
+          fi
+          echo "##########################################################"
+
+          echo "Script complete"
+          exit 0
+        '';
+
+      ixpmReload4 = pkgs.writeShellScriptBin "reload4" (ixpmScriptGenerator cfg.ixpManager.rs4Handle rs4Config rs4Socket);
+      ixpmReload6 = pkgs.writeShellScriptBin "reload6" (ixpmScriptGenerator cfg.ixpManager.rs6Handle rs6Config rs6Socket);
+
+      ixpmReload4Wrapper = pkgs.writeShellScriptBin "ixpm-reload4" ''
+        exec /run/wrappers/bin/sudo -u bird ${lib.getExe' ixpmReload4 "reload4"}
+      '';
+      ixpmReload6Wrapper = pkgs.writeShellScriptBin "ixpm-reload6" ''
+        exec /run/wrappers/bin/sudo -u bird ${lib.getExe' ixpmReload6 "reload6"}
+      '';
+
+      birdwatcherConfigPath = "/etc/birdwatcher/birdwatcher.conf";
+      birdwatcherSettings = ''
+        [server]
+        allow_from = []
+        allow_uncached = false
+        modules_enabled = ["status",
+                            "protocols",
+                            "protocols_bgp",
+                            "protocols_short",
+                            "routes_protocol",
+                            "routes_peer",
+                            "routes_table",
+                            "routes_table_filtered",
+                            "routes_table_peer",
+                            "routes_filtered",
+                            "routes_prefixed",
+                            "routes_noexport",
+                            "routes_pipe_filtered_count",
+                            "routes_pipe_filtered"
+                          ]
+
+        [bird]
+        listen = "0.0.0.0:17904"
+        config = "${rs4Config}"
+        birdc  = "${birdc4}"
+        ttl = 1 # time to live (in minutes) for caching of cli output
+        [bird6]
+        listen = "0.0.0.0:17906"
+        config = "${rs6Config}"
+        birdc  = "${birdc6}"
+        ttl = 1 # time to live (in minutes) for caching of cli output
+
+        [cache]
+        use_redis = false
+
+        [housekeeping]
+        interval = 5
+        force_release_memory = true
+      '';
+
+      birdwatcherServiceConfig = {
+        Type = "simple";
+        Restart = "on-failure";
+        RestartSec = 15;
+        User = "bird";
+        Group = "bird";
+        StateDirectoryMode = "0700";
+        UMask = "0117";
+        NoNewPrivileges = true;
+        ProtectSystem = "strict";
+        PrivateTmp = true;
+        PrivateDevices = true;
+        ProtectHostname = true;
+        ProtectClock = true;
+        ProtectKernelTunables = true;
+        ProtectKernelModules = true;
+        ProtectKernelLogs = true;
+        ProtectControlGroups = true;
+        RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        PrivateMounts = true;
+        SystemCallArchitectures = "native";
+        SystemCallFilter = "~@clock @privileged @cpu-emulation @debug @keyring @module @mount @obsolete @raw-io @reboot @setuid @swap";
+        BindReadOnlyPaths = [
+          "-/etc/resolv.conf"
+          "-/etc/nsswitch.conf"
+          "-/etc/ssl/certs"
+          "-/etc/static/ssl/certs"
+          "-/etc/hosts"
+          "-/etc/localtime"
+        ];
+      };
     in {
       environment = {
-        systemPackages = with pkgs; [bird2];
+        systemPackages = with pkgs; [
+          bird2
+          ixpmReload4Wrapper
+          ixpmReload6Wrapper
+        ];
         shellAliases = {
           inherit birdc4;
           inherit birdc6;
@@ -121,69 +274,6 @@ in {
             ExecPaths = ["/nix/store"];
             NoExecPaths = ["/"];
           };
-
-          ixpmScript = let
-            ixpmUrlLock = "${cfg.ixpManager.baseUrl}/api/v4/router/get-update-lock";
-            ixpmUrlConfig = "${cfg.ixpManager.baseUrl}/api/v4/router/gen-config";
-            ixpmUrlLockRelease = "${cfg.ixpManager.baseUrl}/api/v4/router/release-update-lock";
-            ixpmUrlUpdated = "${cfg.ixpManager.baseUrl}/api/v4/router/updated";
-          in
-            handle: confPath: socketPath: ''
-              echo "Script started"
-
-              if [[ -e ${confPath} ]]; then
-                rm -f ${confPath}.old
-                cp -f ${confPath} ${confPath}.old
-                echo "Backed up old config to ${confPath}.old"
-                echo "##########################################################"
-              fi
-
-              rm -f ${confPath}.new
-              ${pkgs.curl}/bin/curl --verbose --fail -H "X-IXP-Manager-API-Key: ${cfg.ixpManager.apiKey}" -o ${confPath}.new ${ixpmUrlConfig}/${handle}
-              echo "Downloaded new config"
-              echo "##########################################################"
-
-              ${birdPkg}/bin/bird -p -c ${confPath}.new
-              echo "Checked new config"
-              echo "##########################################################"
-
-              echo "Moving new config to main path"
-              cp -f ${confPath}.new ${confPath}
-              rm -f ${confPath}.new
-              echo "##########################################################"
-
-              echo "Checking BIRD operational status"
-              ${birdPkg}/bin/birdc -s ${socketPath} show memory
-              if [[ $? -eq 0 ]]; then
-                echo "Bird detected online, running reconfigure"
-
-                ${birdPkg}/bin/birdc -s ${socketPath} configure
-
-                if [[ $? -ne 0 ]]; then
-                    echo "ERROR: Reconfigure failed for ${handle}"
-
-                    if [[ -e ${confPath}.old ]]; then
-                        echo "  -> Trying to revert to previous"
-                        mv ${confPath} ${confPath}.failed
-                        mv ${confPath}.old ${confPath}
-                        ${birdPkg}/bin/birdc -s ${socketPath} configure
-                        if [[ $? -eq 0 ]]; then
-                            echo "  -> Successfully reverted"
-                        else
-                            echo "  -> Reversion failed"
-                            exit 6
-                        fi
-                    fi
-                fi
-
-              else
-                  echo "BIRD not running - no reconfig"
-              fi
-              echo "##########################################################"
-
-              echo "Script complete"
-              exit 0
-            '';
         in {
           ixpm-rs4 = {
             wantedBy = [
@@ -191,7 +281,7 @@ in {
             ];
             startAt = "hourly";
             serviceConfig = ixpmServiceConfig;
-            script = ixpmScript cfg.ixpManager.rs4Handle rs4Config rs4Socket;
+            script = ixpmScriptGenerator cfg.ixpManager.rs4Handle rs4Config rs4Socket;
           };
           ixpm-rs6 = {
             wantedBy = [
@@ -199,7 +289,7 @@ in {
             ];
             startAt = "hourly";
             serviceConfig = ixpmServiceConfig;
-            script = ixpmScript cfg.ixpManager.rs6Handle rs6Config rs6Socket;
+            script = ixpmScriptGenerator cfg.ixpManager.rs6Handle rs6Config rs6Socket;
           };
           bird4 = {
             description = "IPv4 Routeserver running BIRD Internet Routing Daemon";
@@ -234,9 +324,27 @@ in {
             ];
           };
 
-          birdwatcher.serviceConfig = {
-            User = "bird";
-            Group = "bird";
+          birdwatcher4 = {
+            description = "Birdwatcher HTTP API for the IPv4 Routeserver";
+            wants = ["bird4.service" "network.target"];
+            after = ["bird4.service" "network.target"];
+            wantedBy = ["multi-user.target"];
+            serviceConfig =
+              birdwatcherServiceConfig
+              // {
+                ExecStart = "${lib.getExe pkgs.birdwatcher} -config ${birdwatcherConfigPath}";
+              };
+          };
+          birdwatcher6 = {
+            description = "Birdwatcher HTTP API for the IPv6 Routeserver";
+            wants = ["bird6.service" "network.target"];
+            after = ["bird6.service" "network.target"];
+            wantedBy = ["multi-user.target"];
+            serviceConfig =
+              birdwatcherServiceConfig
+              // {
+                ExecStart = "${lib.getExe pkgs.birdwatcher} -config ${birdwatcherConfigPath} -6";
+              };
           };
           prometheus-bird-exporter.serviceConfig = {
             User = "bird";
@@ -254,48 +362,14 @@ in {
             "-bird.socket6 ${rs6Socket}"
           ];
         };
-        birdwatcher = {
-          enable = true;
-          settings = ''
-            [server]
-            allow_from = []
-            allow_uncached = false
-            modules_enabled = ["status",
-                                "protocols",
-                                "protocols_bgp",
-                                "protocols_short",
-                                "routes_protocol",
-                                "routes_peer",
-                                "routes_table",
-                                "routes_table_filtered",
-                                "routes_table_peer",
-                                "routes_filtered",
-                                "routes_prefixed",
-                                "routes_noexport",
-                                "routes_pipe_filtered_count",
-                                "routes_pipe_filtered"
-                              ]
-
-            [bird]
-            listen = "0.0.0.0:29184"
-            config = "${rs4Config}"
-            birdc  = "${birdc4}"
-            ttl = 1 # time to live (in minutes) for caching of cli output
-            [bird6]
-            listen = "0.0.0.0:29186"
-            config = "${rs6Config}"
-            birdc  = "${birdc6}"
-            ttl = 1 # time to live (in minutes) for caching of cli output
-
-            [cache]
-            use_redis = false
-
-            [housekeeping]
-            interval = 5
-            force_release_memory = true
-          '';
-        };
       };
+
+      environment.etc."birdwatcher/birdwatcher.conf".text = birdwatcherSettings;
+
+      networking.firewall.extraInputRules = ''
+        ip saddr 10.200.0.0/16 tcp dport { 17904, 17906 } accept
+        tcp dport { 17904, 17906 } drop
+      '';
 
       users = {
         users.bird = {

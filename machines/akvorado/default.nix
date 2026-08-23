@@ -23,7 +23,8 @@
   };
 
   users.users.admin.extraGroups = ["podman"];
-  environment={sessionVariables.CONTAINER_HOST = "unix:///run/podman/podman.sock";
+  environment = {
+    sessionVariables.CONTAINER_HOST = "unix:///run/podman/podman.sock";
     etc."akvorado/kafka.env".source = ./kafka.env;
   };
 
@@ -42,7 +43,10 @@
       enable = true;
       dockerSocket.enable = true;
       autoPrune.enable = true;
-      defaultNetwork.settings = { dns_enabled = true; ipv6_enabled = true; };
+      defaultNetwork.settings = {
+        dns_enabled = true;
+        ipv6_enabled = true;
+      };
     };
     oci-containers = let
       # Shared declaration for akvorado container image
@@ -76,7 +80,6 @@
             # KRaft settings
 
             # Listeners
-
 
             # KAFKA_INTER_BROKER_LISTENER_NAME = "CLIENT";
             # # Misc

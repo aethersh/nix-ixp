@@ -6,6 +6,10 @@
 
   networking = {
     hostName = "monitor1-sbtnvt";
+    firewall.extraInputRules = ''
+      ip saddr 10.200.0.0/16 tcp dport 7340 accept
+      tcp dport 7340 drop
+    '';
   };
 
   boot.loader.grub = {

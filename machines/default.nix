@@ -113,7 +113,7 @@
     viAlias = true;
   };
 
-  environment.systemPackages = with pkgs; [iperf3 btop];
+  environment.systemPackages = with pkgs; [iperf3 btop dnsutils bat tcpdump];
 
   # https://www.kernel.org/doc/html/latest/networking/ip-sysctl.html
   boot.kernel.sysctl = {

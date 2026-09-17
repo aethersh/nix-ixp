@@ -116,6 +116,19 @@
           ./machines/akvorado
         ];
       };
+      vtix01 = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+
+        specialArgs = {
+          inherit system;
+        };
+
+        modules = [
+          # Machine config
+          ./machines
+          ./machines/vtix01
+        ];
+      };
     };
 
     deploy = {
@@ -148,6 +161,12 @@
           profiles.system.path =
             deployPkgs."x86_64-linux".deploy-rs.lib.activate.nixos
             self.nixosConfigurations.akvorado;
+        };
+        vtix01 = {
+          hostname = "vtix01.sbtnvt.vermont-ix.net";
+          profiles.system.path =
+            deployPkgs."x86_64-linux".deploy-rs.lib.activate.nixos
+            self.nixosConfigurations.vtix01;
         };
       };
     };
